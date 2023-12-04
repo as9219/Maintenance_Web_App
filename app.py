@@ -1,7 +1,12 @@
 from flask import Flask, render_template, request, redirect, url_for
 
+import firebase_admin
+from firebase_admin import credentials
+
 app = Flask(__name__)
 
+cred = credentials.Certificate("maintenancewebapp-key.json")
+firebase_admin.initialize_app(cred)
 # Placeholder data structures (replace with database implementation)
 tenants = []
 maintenance_requests = []
