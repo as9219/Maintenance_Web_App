@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Browse Tenants</title>
 </head>
 <body>
-    <h1>Browse Tenants</h1>
-    <table border="1">
-        <tr>
-            <th>ID</th>
-            <th>Name</th>
-            <th>Phone Number</th>
-            <th>Email</th>
-            <th>Check-in Date</th>
-            <th>Check-out Date</th>
-            <th>Apartment Number</th>
-            <th>Action</th>
-        </tr>
-        {% for tenant in tenants %}
+    <div class="container">
+        <h1>Browse Tenants</h1>
+        <table>
+            <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Phone Number</th>
+                <th>Email</th>
+                <th>Check-in Date</th>
+                <th>Check-out Date</th>
+                <th>Apartment Number</th>
+            </tr>
+            {% for tenant in tenants %}
             <tr>
                 <td>{{ tenant.id }}</td>
                 <td>{{ tenant.name }}</td>
@@ -28,18 +28,9 @@
                 <td>{{ tenant.check_in_date }}</td>
                 <td>{{ tenant.check_out_date }}</td>
                 <td>{{ tenant.apartment_number }}</td>
-                <td>
-                    <form method="post" action="{{ url_for('move_tenant', tenant_id=tenant.id) }}">
-                        <label for="new_apartment_number">Move to Apartment:</label>
-                        <input type="text" name="new_apartment_number" required>
-                        <button type="submit">Move</button>
-                    </form>
-                    <form method="post" action="{{ url_for('delete_tenant', tenant_id=tenant.id) }}">
-                        <button type="submit">Delete</button>
-                    </form>
-                </td>
             </tr>
-        {% endfor %}
-    </table>
+            {% endfor %}
+        </table>
+    </div>
 </body>
 </html>

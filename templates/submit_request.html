@@ -2,23 +2,25 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
     <title>Submit Maintenance Request</title>
 </head>
 <body>
-    <h1>Submit Maintenance Request</h1>
-    <form method="post" enctype="multipart/form-data">
-        <label for="area">Area:</label>
-        <input type="text" name="area" required><br>
+    <div class="container">
+        <h1>Submit Maintenance Request</h1>
+        <form action="{{ url_for('submit_request') }}" method="post" enctype="multipart/form-data">
+            <label for="area">Area:</label>
+            <input type="text" name="area" required>
 
-        <label for="description">Description:</label>
-        <input type="text" name="description" required><br>
+            <label for="description">Description:</label>
+            <textarea name="description" required></textarea>
 
-        <label for="photo">Photo:</label>
-        <input type="file" name="photo"><br>
+            <label for="photo">Photo (optional):</label>
+            <input type="file" name="photo">
 
-        <input type="submit" value="Submit Request">
-    </form>
+            <button type="submit">Submit Request</button>
+        </form>
+    </div>
 </body>
 </html>
