@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Browse Maintenance Requests</title>
+</head>
+<body>
+    <h1>Browse Maintenance Requests</h1>
+    <table border="1">
+        <tr>
+            <th>ID</th>
+            <th>Apartment Number</th>
+            <th>Area</th>
+            <th>Description</th>
+            <th>Date/Time</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        {% for request in maintenance_requests %}
+            <tr>
+                <td>{{ request.id }}</td>
+                <td>{{ request.apartment_number }}</td>
+                <td>{{ request.area }}</td>
+                <td>{{ request.description }}</td>
+                <td>{{ request.date_time }}</td>
+                <td>{{ request.status }}</td>
+                <td>
+                    {% if request.status == 'pending' %}
+                        <form method="post" action="{{ url_for('update_status', request_id=request.id) }}">
+                            <button type="submit">Mark as Completed</button>
+                        </form>
+                    {% endif %}
+                </td>
+            </tr>
+        {% endfor %}
+    </table>
+</body>
+</html>
