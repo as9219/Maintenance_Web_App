@@ -1,0 +1,15 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tenant Dashboard</title>
+
+</head>
+<body>
+    <h1>tgtWelcome to the Tenant Dashboard, {{ session['email'] }}!</h1>
+
+    <a href="{{ url_for('submit_request') }}"><button>Submit Request</button></a>
+
+</body>
+</html>
