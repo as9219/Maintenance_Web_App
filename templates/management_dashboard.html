@@ -3,11 +3,20 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Management Dashboard</title>
-
+    <title>Tenant Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='management_dashboard.css') }}">
 </head>
 <body>
-    <h1>Welcome to the Management Dashboard, {{ session['email'] }}!</h1>
+    <div class="navbar">
+        <h1>Management Dashboard - {{ session['email'] }}</h1>
+    </div>
 
+    <div class="dashboard-container">
+        <a href="{{ url_for('add_tenant') }}"><button>Add New Tenant</button></a>
+        <a href="{{ url_for('browse_tenants') }}"><button>Browse Tenants</button></a>
+        <a href="{{ url_for('browse_requests') }}"><button>Browse Maintenance Requests</button></a>
+{#        <a href="{{ url_for('logout') }}"><button class="logout-btn">Logout</button></a>#}
+    </div>
 </body>
 </html>
+

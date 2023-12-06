@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='browse_requests.css') }}">
     <title>Browse Maintenance Requests</title>
 </head>
 <body>
@@ -17,6 +17,7 @@
                 <th>Description</th>
                 <th>Date/Time</th>
                 <th>Status</th>
+                <th>Action</th>
             </tr>
             {% for request in maintenance_requests %}
             <tr>
@@ -26,9 +27,15 @@
                 <td>{{ request.description }}</td>
                 <td>{{ request.date_time }}</td>
                 <td>{{ request.status }}</td>
+                <td>
+                    <a href="{{ url_for('complete_request', request_id=request.id) }}"><button>Mark As Complete</button></a>
+                </td>
             </tr>
             {% endfor %}
         </table>
+    </div>
+    <div class = "back_button">
+        <a href="{{ url_for('staff_dashboard', request_id=request.id) }}"><button>Back</button></a>
     </div>
 </body>
 </html>

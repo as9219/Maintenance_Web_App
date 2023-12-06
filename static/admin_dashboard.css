@@ -1,0 +1,35 @@
+body {
+    font-family: Arial, sans-serif;
+    background-color: #ff8f8f;
+    margin: 0;
+    padding: 0;
+}
+
+.navbar {
+    background-color: #ff0000;
+    padding: 10px;
+    color: #fff;
+    text-align: center;
+}
+
+.dashboard-container {
+    max-width: 800px;
+    margin: 20px auto;
+    background-color: #fff;
+    padding: 20px;
+    border-radius: 5px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}
+
+h1 {
+    color: #ffffff;
+}
+
+.logout-btn {
+    padding: 10px;
+    background-color: #dc3545;
+    color: #fff;
+    border: none;
+    cursor: pointer;
+    border-radius: 3px;
+}

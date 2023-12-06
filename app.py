@@ -16,6 +16,7 @@ firebase_admin.initialize_app(cred, {"databaseURL": "https://maintenancewebapp-d
 db = firestore.client()
 
 
+# generates password for new tenant
 def generate_password(length=8):
     characters = string.ascii_letters + string.digits + string.punctuation
     return ''.join(random.choice(characters) for i in range(length))
@@ -45,7 +46,6 @@ def login():
 
                     session['email'] = email
                     session['role'] = role
-                    print("Email : Role ", role, " ; ", email)  # remove
 
                     if role == "admin":
                         return redirect(url_for('admin_dashboard'))
@@ -59,15 +59,15 @@ def login():
     return redirect(url_for('home'))
 
 
-@app.route('/admin/dashboard')
+@app.route('/admin/dashboard', methods=['GET', 'POST'])
 def admin_dashboard():
     if 'email' in session and session.get('role') == 'admin':
         return render_template('admin_dashboard.html')
     else:
-        abort(403) # not authorized error
+        abort(403)  # not authorized error
 
 
-@app.route('/management/dashboard')
+@app.route('/management/dashboard', methods=['GET', 'POST'])
 def management_dashboard():
     if 'email' in session and session.get('role') == 'management':
         return render_template('management_dashboard.html')
@@ -75,7 +75,7 @@ def management_dashboard():
         abort(403)
 
 
-@app.route('/staff/dashboard')
+@app.route('/staff/dashboard', methods=['GET', 'POST'])
 def staff_dashboard():
     if 'email' in session and session.get('role') == 'staff':
         return render_template('staff_dashboard.html')
@@ -83,7 +83,7 @@ def staff_dashboard():
         abort(403)
 
 
-@app.route('/tenant/dashboard')
+@app.route('/tenant/dashboard', methods=['GET', 'POST'])
 def tenant_dashboard():
     if 'email' in session and session.get('role') == 'tenant':
         return render_template('tenant_dashboard.html')
@@ -91,33 +91,50 @@ def tenant_dashboard():
         abort(403)
 
 
-# incomplete function
 @app.route('/submit_request', methods=['GET', 'POST'])
 def submit_request():
     if request.method == 'POST':
         area = request.form['area']
         description = request.form['description']
-        photo = request.files['photo'] if 'photo' in request.files else None
+        # photo = request.files['photo'] if 'photo' in request.files else None
 
-        # request_id = db.collection('maintenance_requests').document().id
-        # tenant = db.collection('tenants').limit(1).get()[0].to_dict() if db.collection('tenants').limit(1).get() else None
-        status = 'pending'
+        # unique id using db import
+        request_id = db.collection('maintenanceRequests').document().id
 
-        maintenance_request = {
-            # 'id': request_id,
-            # 'apartment_number': tenant['apartment_number'],
-            'area': area,
-            'description': description,
-            'date_time': '2023-12-03 12:00:00',  # Placeholder for current date/time
-            'photo': photo,
-            'status': status,
-        }
+        tenant_email = session.get('email')
+        tenant_doc = db.collection('tenants').document(tenant_email).get()
 
-        # db.collection('maintenance_requests').add(maintenance_request)
+        if tenant_doc.exists:
+            tenant = tenant_doc.to_dict()
 
-        return redirect(url_for('submit_request'))
+            # grab current sys time
+            sys_time = datetime.now()
+            formatted_time = sys_time.strftime("%b/%d/%Y - %H:%M:%S")
+
+            status = 'pending'
+            maintenance_request = {
+                'id': request_id,
+                'apartment_number': tenant['apartment_number'],
+                'area': area,
+                'description': description,
+                'date_time': formatted_time,
+                #'photo': photo,
+                'status': status,
+            }
+
+            db.document(f'maintenanceRequests/{request_id}').set(maintenance_request)
+
+            return redirect(url_for('tenant_dashboard'))
 
     return render_template('submit_request.html')
+
+
+@app.route('/complete_request/<request_id>', methods=['GET', 'POST'])
+def complete_request(request_id):
+    # Assuming you want to set the status to "Complete" in the document
+    db.document(f'maintenanceRequests/{request_id}').update({"status": "Complete"})
+
+    return redirect(url_for('browse_requests'))
 
 
 @app.route('/add_tenant', methods=['GET', 'POST'])
@@ -139,7 +156,7 @@ def add_tenant():
             'phone_number': phone_number,
             'check_in_date': check_in_date,
             'check_out_date': check_out_date,
-            'apartment_number': apartment_number,
+            'apartment_number': apartment_number
         }
 
         db.document(f'tenants/{tenant_email}').set(tenant_data)
@@ -147,32 +164,34 @@ def add_tenant():
         login_data = {
             'email': tenant_email,
             'password': tenant_password,
+            'role': 'tenant'
         }
         db.document(f'loginID/{tenant_email}').set(login_data)
 
-        return redirect(url_for('add_tenant'))
+        return redirect(url_for('management_dashboard'))
 
     return render_template('add_tenant.html')
 
 
 # incomplete function
+# need to implement the add maintenance request first
 @app.route('/browse_requests', methods=['GET'])
 def browse_requests():
     filters = request.args.to_dict()
     maintenance_requests = []
 
-    # maintenance_requests_ref = db.collection('maintenance_requests')
+    maintenance_requests_ref = db.collection('maintenanceRequests').stream()
 
-    for key, value in filters.items():
+    for maintenance_doc in maintenance_requests_ref:
+        maintenance_requests.append(maintenance_doc.to_dict())
+    """for key, value in filters.items():
         if key in ['apartment_number', 'area', 'date_time', 'status']:
             maintenance_requests_ref = maintenance_requests_ref.where(key, '==', value)
 
-    # docs = maintenance_requests_ref.stream()
+    for doc in docs:
+        maintenance_requests.append(doc.to_dict())"""
 
-    # for doc in docs:
-    #    maintenance_requests.append(doc.to_dict())
-
-    # return render_template('browse_requests.html', maintenance_requests=maintenance_requests)
+    return render_template('browse_requests.html', maintenance_requests=maintenance_requests)
 
 
 @app.route('/browse_tenants')
