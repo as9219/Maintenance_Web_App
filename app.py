@@ -173,23 +173,29 @@ def add_tenant():
     return render_template('add_tenant.html')
 
 
+@app.route('/remove_tenant/<tenant_id>', methods=['GET', 'POST'])
+def remove_tenant(tenant_id):
+    tenant_doc = db.document(f'tenants/{tenant_id}').get()
+
+    if tenant_doc.exists:
+        db.document(f'tenants/{tenant_id}').delete()
+        db.document(f'loginID/{tenant_id}').delete()
+
+        return redirect(url_for('browse_tenants'))
+
+    return render_template('management_dashboard.html')
+
+
 # incomplete function
 # need to implement the add maintenance request first
 @app.route('/browse_requests', methods=['GET'])
 def browse_requests():
-    filters = request.args.to_dict()
     maintenance_requests = []
 
     maintenance_requests_ref = db.collection('maintenanceRequests').stream()
 
     for maintenance_doc in maintenance_requests_ref:
         maintenance_requests.append(maintenance_doc.to_dict())
-    """for key, value in filters.items():
-        if key in ['apartment_number', 'area', 'date_time', 'status']:
-            maintenance_requests_ref = maintenance_requests_ref.where(key, '==', value)
-
-    for doc in docs:
-        maintenance_requests.append(doc.to_dict())"""
 
     return render_template('browse_requests.html', maintenance_requests=maintenance_requests)
 

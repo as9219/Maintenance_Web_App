@@ -11,7 +11,7 @@
         <h1>Browse Tenants</h1>
         <table>
             <tr>
-                <th>ID</th>
+                <th>Email</th>
                 <th>Name</th>
                 <th>Phone Number</th>
                 <th>Check-in Date</th>
@@ -26,9 +26,16 @@
                 <td>{{ tenant.check_in_date }}</td>
                 <td>{{ tenant.check_out_date }}</td>
                 <td>{{ tenant.apartment_number }}</td>
+                <td>
+                    <a href="{{ url_for('remove_tenant', tenant_id=tenant.id) }}"><button>Remove Tenant</button></a>
+{#                    <a href="{{ url_for('move_tenant', apartment_number=tenant.apartment_number) }}"><button>Move Tenant</button></a>#}
+                </td>
             </tr>
             {% endfor %}
-        </table>
-    </div>
-</body>
+            </table>
+        </div>
+            <a href="{{ url_for('management_dashboard') }}"><button>Go Back</button></a>
+        <div>
+        </div>
+    </body>
 </html>
