@@ -1,19 +1,21 @@
 import random
 import string
 import firebase_admin
-from firebase_admin import credentials, firestore
+from firebase_admin import credentials, firestore, storage
 from firebase_admin import db
 from flask import Flask, render_template, request, redirect, url_for
 from flask import session, abort
 from datetime import datetime
 
-app = Flask(__name__)
-app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
-
 cred = credentials.Certificate("maintenancewebapp-key.json")
 firebase_admin.initialize_app(cred, {"databaseURL": "https://maintenancewebapp-default-rtdb.firebaseio.com/"})
+storage_app = firebase_admin.initialize_app(cred, {'storageBucket': 'maintenancewebapp.appspot.com'}, name='storage')
 
 db = firestore.client()
+bucket = storage.bucket(app=storage_app)
+
+app = Flask(__name__)
+app.secret_key = b'_5#y2L"F4Q8z\n\xec]/'
 
 
 # generates password for new tenant
@@ -27,6 +29,12 @@ def generate_password(length=8):
 def home():
     return render_template('login.html')
 
+
+@app.route('/logout')
+def logout():
+    session.clear()
+
+    return redirect(url_for('home'))
 
 @app.route('/login', methods=['POST'])
 def login():
@@ -91,12 +99,16 @@ def tenant_dashboard():
         abort(403)
 
 
+UPLOAD_FOLDER = 'imageUploads'
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
 @app.route('/submit_request', methods=['GET', 'POST'])
 def submit_request():
     if request.method == 'POST':
         area = request.form['area']
         description = request.form['description']
-        # photo = request.files['photo'] if 'photo' in request.files else None
+        photo = request.files['photo'] if 'photo' in request.files else None
 
         # unique id using db import
         request_id = db.collection('maintenanceRequests').document().id
@@ -111,16 +123,25 @@ def submit_request():
             sys_time = datetime.now()
             formatted_time = sys_time.strftime("%b/%d/%Y - %H:%M:%S")
 
-            status = 'pending'
+            status = 'Pending'
             maintenance_request = {
                 'id': request_id,
                 'apartment_number': tenant['apartment_number'],
                 'area': area,
                 'description': description,
                 'date_time': formatted_time,
-                #'photo': photo,
                 'status': status,
+                'photo': None
             }
+
+            if photo:
+                photo_filename = f"{maintenance_request['id']}_{photo.filename}"
+                # photo.save(os.path.join(app.config['UPLOAD_FOLDER'], photo_filename))
+                # photo_path = os.path.join(app.config['UPLOAD_FOLDER'], photo_filename)
+                # Save the file path in the database
+                blob = bucket.blob(photo_filename)
+                blob.upload_from_file(photo, content_type=photo.content_type)
+                maintenance_request["photo"] = blob.public_url
 
             db.document(f'maintenanceRequests/{request_id}').set(maintenance_request)
 
@@ -173,6 +194,17 @@ def add_tenant():
     return render_template('add_tenant.html')
 
 
+@app.route('/move_tenant/<tenant_id>', methods=['GET', 'POST'])
+def move_tenant(tenant_id):
+    if request.method == 'POST':
+        new_apartment_number = request.form['new_apartment_number']
+        # Update the tenant's apartment number in the database
+        db.document(f'tenants/{tenant_id}').update({'apartment_number': new_apartment_number})
+        return redirect(url_for('browse_tenants', role='management'))
+
+    return render_template('move_tenant.html', tenant_id=tenant_id)
+
+
 @app.route('/remove_tenant/<tenant_id>', methods=['GET', 'POST'])
 def remove_tenant(tenant_id):
     tenant_doc = db.document(f'tenants/{tenant_id}').get()
@@ -186,8 +218,6 @@ def remove_tenant(tenant_id):
     return render_template('management_dashboard.html')
 
 
-# incomplete function
-# need to implement the add maintenance request first
 @app.route('/browse_requests', methods=['GET'])
 def browse_requests():
     maintenance_requests = []
@@ -200,6 +230,32 @@ def browse_requests():
     return render_template('browse_requests.html', maintenance_requests=maintenance_requests)
 
 
+@app.route('/search_requests', methods=['POST'])
+def search_requests():
+    search_criteria = request.form.get('search')
+    if search_criteria:
+        maintenance_requests_ref = db.collection('maintenanceRequests')
+        unique_results = set()
+
+        query_apartment = maintenance_requests_ref.where('apartment_number', '>=', search_criteria).stream()
+        query_area = maintenance_requests_ref.where('area', '==', search_criteria).stream()
+        query_status = maintenance_requests_ref.where('status', '==', search_criteria).stream()
+        query_id = maintenance_requests_ref.where('id', '==', search_criteria).stream()
+
+        unique_results.update(query_apartment)
+        unique_results.update(query_area)
+        unique_results.update(query_status)
+        unique_results.update(query_id)
+
+        maintenance_requests = [maintenance_doc.to_dict() for maintenance_doc in unique_results]
+
+    else:
+        maintenance_requests_ref = db.collection('maintenanceRequests').stream()
+        maintenance_requests = [maintenance_doc.to_dict() for maintenance_doc in maintenance_requests_ref]
+
+    return render_template('browse_requests.html', maintenance_requests=maintenance_requests)
+
+
 @app.route('/browse_tenants')
 def browse_tenants():
     tenants = []
@@ -207,7 +263,6 @@ def browse_tenants():
 
     for tenant_doc in tenants_ref:
         tenants.append(tenant_doc.to_dict())
-
     return render_template('browse_tenants.html', tenants=tenants)
 
 

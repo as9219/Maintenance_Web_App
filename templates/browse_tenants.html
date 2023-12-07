@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='browse_tenants.css') }}">
     <title>Browse Tenants</title>
 </head>
 <body>
@@ -28,14 +28,14 @@
                 <td>{{ tenant.apartment_number }}</td>
                 <td>
                     <a href="{{ url_for('remove_tenant', tenant_id=tenant.id) }}"><button>Remove Tenant</button></a>
-{#                    <a href="{{ url_for('move_tenant', apartment_number=tenant.apartment_number) }}"><button>Move Tenant</button></a>#}
+                    <a href="{{ url_for('move_tenant', tenant_id=tenant.id) }}"><button>Move Tenant</button></a>
                 </td>
             </tr>
             {% endfor %}
-            </table>
-        </div>
-            <a href="{{ url_for('management_dashboard') }}"><button>Go Back</button></a>
-        <div>
-        </div>
+        </table>
+    </div>
+    <div>
+        <a href="{{ url_for('management_dashboard') }}"><button>Go Back</button></a>
+    </div>
     </body>
 </html>

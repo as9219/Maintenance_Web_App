@@ -11,7 +11,14 @@
         <h1>Submit Maintenance Request</h1>
         <form action="{{ url_for('submit_request') }}" method="post" enctype="multipart/form-data">
             <label for="area">Area:</label>
-            <input type="text" name="area" required>
+            <select name="area" required>
+                <option value="Bedroom">Bedroom</option>
+                <option value="Kitchen">Kitchen</option>
+                <option value="Living Room">Living Room</option>
+                <option value="Bathroom">Bathroom</option>
+                <option value="Laundry">Laundry</option>
+                <option value="Other">Other</option>
+            </select>
 
             <label for="description">Description:</label>
             <textarea name="description" required></textarea>

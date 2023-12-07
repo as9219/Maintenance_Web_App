@@ -9,13 +9,19 @@
 <body>
     <div class="container">
         <h1>Browse Maintenance Requests</h1>
+        <form action="{{ url_for('search_requests') }}" method="post">
+            <label for="search">Search:</label>
+            <input type="text" name="search" placeholder="Enter search criteria">
+            <button type="submit">Search</button>
+        </form>
         <table>
             <tr>
-                <th>ID</th>
+                <th>Request ID</th>
                 <th>Apartment Number</th>
                 <th>Area</th>
                 <th>Description</th>
                 <th>Date/Time</th>
+                <th>Photo</th>
                 <th>Status</th>
                 <th>Action</th>
             </tr>
@@ -26,6 +32,13 @@
                 <td>{{ request.area }}</td>
                 <td>{{ request.description }}</td>
                 <td>{{ request.date_time }}</td>
+                <td>
+                    {% if request.photo %}
+                        <img src="{{ request.photo }}" alt="Maintenance Request Photo" style="max-width: 100px; max-height: 100px;">
+                    {% else %}
+                        No Photo Available
+                    {% endif %}
+                </td>
                 <td>{{ request.status }}</td>
                 <td>
                     <a href="{{ url_for('complete_request', request_id=request.id) }}"><button>Mark As Complete</button></a>
@@ -33,8 +46,6 @@
             </tr>
             {% endfor %}
         </table>
-    </div>
-    <div class = "back_button">
     </div>
 </body>
 </html>
