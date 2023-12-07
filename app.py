@@ -152,7 +152,6 @@ def submit_request():
 
 @app.route('/complete_request/<request_id>', methods=['GET', 'POST'])
 def complete_request(request_id):
-    # Assuming you want to set the status to "Complete" in the document
     db.document(f'maintenanceRequests/{request_id}').update({"status": "Complete"})
 
     return redirect(url_for('browse_requests'))
@@ -198,7 +197,6 @@ def add_tenant():
 def move_tenant(tenant_id):
     if request.method == 'POST':
         new_apartment_number = request.form['new_apartment_number']
-        # Update the tenant's apartment number in the database
         db.document(f'tenants/{tenant_id}').update({'apartment_number': new_apartment_number})
         return redirect(url_for('browse_tenants', role='management'))
 
